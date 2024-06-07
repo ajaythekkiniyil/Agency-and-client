@@ -3,6 +3,7 @@ const app = express()
 const dotenv = require('dotenv')
 const connectDb = require('./helper/connectDb')
 const apiRoutes = require('./routes/apiRoutes')
+const loginRoutes = require('./routes/loginRoutes')
 
 // .env file configuration
 dotenv.config()
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api', apiRoutes)
+app.use('/login', loginRoutes)
 
 const port = process.env.port || 3000
 app.listen(port, console.log(`server listen on port:${port}`))

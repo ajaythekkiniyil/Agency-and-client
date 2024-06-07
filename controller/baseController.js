@@ -62,20 +62,20 @@ module.exports = {
         try {
             const topClient = await clientModel.aggregate([
                 { $sort: { totalBill: -1 } },
-                { $limit: 1 }, 
+                { $limit: 1 },
                 {
                     $lookup: {
-                        from: 'agencies', 
-                        localField: 'agencyId', 
-                        foreignField: 'agencyId', 
+                        from: 'agencies',
+                        localField: 'agencyId',
+                        foreignField: 'agencyId',
                         as: 'agency'
                     }
                 },
                 { $unwind: '$agency' },
                 {
                     $project: {
-                        agencyName: '$agency.name', 
-                        clientName: '$name', 
+                        agencyName: '$agency.name',
+                        clientName: '$name',
                         totalBill: 1
                     }
                 }

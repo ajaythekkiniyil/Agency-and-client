@@ -4,6 +4,7 @@ const clientSchema = new mongoose.Schema({
     clientId: {
         type: String,
         require: true,
+        unique: true,
     },
     agencyId: {
         type: String,
