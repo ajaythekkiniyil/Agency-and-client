@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const dotenv = require('dotenv')
 const connectDb = require('./helper/connectDb')
-const { createDocument } = require('./controller/baseController')
+const apiRoutes = require('./routes/apiRoutes')
 
 // .env file configuration
 dotenv.config()
@@ -18,8 +18,7 @@ app.get('/', (req, res) => {
     res.status(200).json('Api working fine...')
 })
 
-// create new agency and client
-app.post('/create-new-agency-client', createDocument)
+app.use('/api', apiRoutes)
 
 const port = process.env.port || 3000
 app.listen(port, console.log(`server listen on port:${port}`))

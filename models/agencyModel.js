@@ -1,15 +1,13 @@
 const mongoose = require('mongoose')
 
 const agencySchema = new mongoose.Schema({
-    id: {
+    agencyId: {
         type: String,
         require: true,
-        unique: true,
     },
     name: {
         type: String,
         require: true,
-        unique: true,
     },
     address1: {
         type: String,
@@ -29,7 +27,6 @@ const agencySchema = new mongoose.Schema({
     phone: {
         type: String,
         require: true,
-        unique: true,
     },
 })
 

@@ -1,24 +1,19 @@
-const crypto = require('crypto')
 const agencyModel = require('../models/agencyModel')
 const clientModel = require('../models/clientModel')
 
 module.exports = {
-    createDocument: async(req, res) => {
+    createDocument: async (req, res) => {
         // getting data from request body
-        const { agencyName, agencyAddress1, agencyAddress2, agencyState, agencyCity, agencyPhone } = req.body
-        const { clientName, clientEmail, clientPhone, totalBill } = req.body
+        const { agencyId, agencyName, agencyAddress1, agencyAddress2, agencyState, agencyCity, agencyPhone } = req.body.agency
+        const { clientId, clientName, clientEmail, clientPhone, totalBill } = req.body.client
 
         // Check if all required fields are present
-        if (!agencyName || !agencyAddress1 || !agencyState || !agencyCity || !agencyPhone || !clientName || !clientEmail || !clientPhone || !totalBill) {
+        if (!agencyId || !clientId || !agencyName || !agencyAddress1 || !agencyState || !agencyCity || !agencyPhone || !clientName || !clientEmail || !clientPhone || !totalBill) {
             return res.status(400).json({ message: 'Please send all required fields' });
         }
 
-        // generating unique agency id and client id
-        const agencyId = crypto.randomBytes(16).toString('hex')
-        const clientId = crypto.randomBytes(16).toString('hex')
-
         const newAgency = new agencyModel({
-            id: agencyId,
+            agencyId: agencyId,
             name: agencyName,
             address1: agencyAddress1,
             address2: agencyAddress2,
@@ -28,7 +23,7 @@ module.exports = {
         })
 
         const newClient = new clientModel({
-            id: clientId,
+            clientId: clientId,
             agencyId: agencyId,
             name: clientName,
             email: clientEmail,
@@ -37,11 +32,58 @@ module.exports = {
         })
 
         try {
-            await newAgency.save();
+            // one agency have multiples clients
+            // check if agency with agencyId is already created to db
+            let isAgency = await agencyModel.find({ agencyId: agencyId })
+            if (isAgency.length === 0) {
+                await newAgency.save();
+            }
             await newClient.save();
-            res.status(201).json({ message: 'Agency and client created successfully'});
+            res.status(201).json({ message: 'Agency and client created successfully' });
         } catch (err) {
             return res.status(500).json({ message: 'Error while creating new documents', error: err.message });
+        }
+    },
+    updateClientData: async (req, res) => {
+        try {
+            const clientId = req.params.clientId;
+            const updatedClient = await clientModel.findOneAndUpdate({ clientId: clientId }, req.body, { new: true })
+
+            if (!updatedClient) {
+                return res.status(404).json({ message: 'Client not found' });
+            }
+
+            res.status(200).json({ message: 'Client updated successfully' });
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating client', error });
+        }
+    },
+    getTopClient: async (req, res) => {
+        try {
+            const topClient = await clientModel.aggregate([
+                { $sort: { totalBill: -1 } },
+                { $limit: 1 }, 
+                {
+                    $lookup: {
+                        from: 'agencies', 
+                        localField: 'agencyId', 
+                        foreignField: 'agencyId', 
+                        as: 'agency'
+                    }
+                },
+                { $unwind: '$agency' },
+                {
+                    $project: {
+                        agencyName: '$agency.name', 
+                        clientName: '$name', 
+                        totalBill: 1
+                    }
+                }
+            ]);
+
+            res.status(200).json(topClient);
+        } catch (error) {
+            res.status(500).json({ message: 'Error fetching top client', error });
         }
     }
 }
