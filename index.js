@@ -1,9 +1,13 @@
 const express = require('express')
 const app = express()
 const dotenv = require('dotenv')
+const connectDb = require('./helper/connectDb')
 
 // .env file configuration
 dotenv.config()
+
+// connecting to database
+connectDb()
 
 // test end point
 app.get('/', (req, res) => {
@@ -12,7 +16,7 @@ app.get('/', (req, res) => {
 
 // create new agency and client
 app.post('/create', (req, res) => {
-
+    
 })
 
 const port = process.env.port || 3000
