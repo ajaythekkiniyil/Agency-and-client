@@ -11,7 +11,10 @@ router.post('/', (req, res) => {
         const token = jwt.sign(payload, process.env.jwtsecret, { expiresIn: '1h' });
 
         // Return the token
-        res.json({ message: 'Authentication successful', token });
+        return res.status(200).json({ message: 'Authentication successful', token });
+    }
+    else{
+        return res.status(400).json({ message: 'invalid credentials' });
     }
 })
 
